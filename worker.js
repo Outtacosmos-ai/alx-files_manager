@@ -6,14 +6,14 @@ import dbClient from './utils/db';
 
 const fileQueue = new Bull('fileQueue');
 
-const generateThumbnail = async (width, localPath) => {
+async function generateThumbnail(width, localPath) {
   const thumbnail = await imageThumbnail(localPath, { width });
   const thumbnailPath = `${localPath}_${width}`;
   await fs.promises.writeFile(thumbnailPath, thumbnail);
-};
+}
 
 fileQueue.process(async (job) => {
-  const { userId, fileId } = job.data;
+  const { fileId, userId } = job.data;
 
   if (!fileId) {
     throw new Error('Missing fileId');
@@ -23,10 +23,11 @@ fileQueue.process(async (job) => {
     throw new Error('Missing userId');
   }
 
-  const file = await dbClient.client.db().collection('files').findOne({
-    _id: ObjectId(fileId),
-    userId: ObjectId(userId),
-  });
+  const file = await dbClient.client.db().collection('files')
+    .findOne({
+      _id: ObjectId(fileId),
+      userId: ObjectId(userId),
+    });
 
   if (!file) {
     throw new Error('File not found');
@@ -34,8 +35,8 @@ fileQueue.process(async (job) => {
 
   const sizes = [500, 250, 100];
 
-  // Run all thumbnail generation promises concurrently
-  await Promise.all(sizes.map((size) => generateThumbnail(size, file.localPath)));
+  const thumbnailPromises = sizes.map((size) => generateThumbnail(size, file.localPath));
+  await Promise.all(thumbnailPromises);
 });
 
 export default fileQueue;
