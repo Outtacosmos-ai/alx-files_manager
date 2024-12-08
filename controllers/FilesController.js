@@ -47,7 +47,7 @@ class FilesController {
       }
     }
 
-    const newFile = {
+    const fileDocument = {
       userId: ObjectId(userId),
       name,
       type,
@@ -56,14 +56,14 @@ class FilesController {
     };
 
     if (type === 'folder') {
-      const result = await filesCollection.insertOne(newFile);
+      const result = await filesCollection.insertOne(fileDocument);
       return res.status(201).json({
         id: result.insertedId,
-        userId: newFile.userId,
-        name,
-        type,
-        isPublic,
-        parentId: newFile.parentId,
+        userId: fileDocument.userId,
+        name: fileDocument.name,
+        type: fileDocument.type,
+        isPublic: fileDocument.isPublic,
+        parentId: fileDocument.parentId,
       });
     }
 
@@ -73,9 +73,9 @@ class FilesController {
     await fs.promises.mkdir(path.dirname(localPath), { recursive: true });
     await fs.promises.writeFile(localPath, Buffer.from(data, 'base64'));
 
-    newFile.localPath = localPath;
+    fileDocument.localPath = localPath;
 
-    const result = await filesCollection.insertOne(newFile);
+    const result = await filesCollection.insertOne(fileDocument);
 
     if (type === 'image') {
       const fileQueue = new Queue('fileQueue');
@@ -84,11 +84,11 @@ class FilesController {
 
     return res.status(201).json({
       id: result.insertedId,
-      userId: newFile.userId,
-      name,
-      type,
-      isPublic,
-      parentId: newFile.parentId,
+      userId: fileDocument.userId,
+      name: fileDocument.name,
+      type: fileDocument.type,
+      isPublic: fileDocument.isPublic,
+      parentId: fileDocument.parentId,
     });
   }
 
@@ -111,7 +111,14 @@ class FilesController {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    return res.status(200).json(file);
+    return res.status(200).json({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
   }
 
   static async getIndex(req, res) {
@@ -129,20 +136,23 @@ class FilesController {
     const page = parseInt(req.query.page || '0', 10);
     const filesCollection = dbClient.client.db().collection('files');
 
-    const query = { userId: ObjectId(userId) };
-    if (parentId !== '0') {
-      query.parentId = ObjectId(parentId);
-    } else {
-      query.parentId = '0';
-    }
-
     const files = await filesCollection
-      .find(query)
+      .find({
+        userId: ObjectId(userId),
+        parentId: parentId === '0' ? '0' : ObjectId(parentId),
+      })
       .skip(page * 20)
       .limit(20)
       .toArray();
 
-    return res.status(200).json(files);
+    return res.status(200).json(files.map((file) => ({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    })));
   }
 
   static async putPublish(req, res) {
@@ -238,7 +248,7 @@ class FilesController {
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
 
-    // Explicitly return to satisfy ESLint
+    // Explicitly return null to satisfy ESLint's consistent-return rule
     return null;
   }
 }
