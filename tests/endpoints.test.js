@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import request from 'supertest';
 import app from '../server';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 describe('API Endpoints', () => {
   let token;
@@ -138,5 +139,12 @@ describe('API Endpoints', () => {
       expect(res.statusCode).to.equal(200);
       expect(res.text).to.equal('Hello World');
     });
+  });
+
+  after(async () => {
+    // Close the MongoDB connection after all tests
+    await dbClient.client.close();
+    // Close the Redis connection
+    await redisClient.client.quit();
   });
 });
