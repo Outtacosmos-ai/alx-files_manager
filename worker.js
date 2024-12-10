@@ -25,17 +25,13 @@ fileQueue.process(async (job) => {
   }
 
   const file = await dbClient.client.db().collection('files')
-    .findOne({
-      _id: ObjectId(fileId),
-      userId: ObjectId(userId),
-    });
+    .findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
 
   if (!file) {
     throw new Error('File not found');
   }
 
   const sizes = [500, 250, 100];
-
   const thumbnailPromises = sizes.map((size) => generateThumbnail(size, file.localPath));
   await Promise.all(thumbnailPromises);
 });
@@ -47,8 +43,7 @@ userQueue.process(async (job) => {
     throw new Error('Missing userId');
   }
 
-  const user = await dbClient.client.db().collection('users')
-    .findOne({ _id: ObjectId(userId) });
+  const user = await dbClient.client.db().collection('users').findOne({ _id: ObjectId(userId) });
 
   if (!user) {
     throw new Error('User not found');
@@ -58,3 +53,5 @@ userQueue.process(async (job) => {
 });
 
 export { fileQueue, userQueue };
+
+

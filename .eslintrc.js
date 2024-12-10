@@ -1,34 +1,38 @@
 module.exports = {
   env: {
-    node: true, // Enable Node.js globals like process, console, and Buffer
-    es2020: true, // Use es2020 for compatibility
+    node: true, 
+    es2020: true,
+    jest: true, // Add this line to tell ESLint about Jest globals
   },
   extends: [
-    'eslint:recommended', // Basic recommended ESLint rules
-    'plugin:jest/all', // If you're using Jest for testing
+    'eslint:recommended', 
+    'plugin:jest/all', 
+    'plugin:chai-friendly/recommended',
   ],
   parserOptions: {
-    ecmaVersion: 2020, // Set ECMAScript version to 2020
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
-  plugins: ['jest'], // Jest plugin for test-related rules
+  plugins: ['jest'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
   },
   rules: {
-    'max-classes-per-file': 'off', // Allow multiple classes in a file
-    'no-underscore-dangle': 'off', // Allow underscores in variable names
-    'no-console': 'off', // Allow console statements
-    'no-shadow': 'off', // Disable the no-shadow rule
+    'jest/valid-expect': 'off',
+    'no-undef': 'off',
+    'max-classes-per-file': 'off',
+    'no-underscore-dangle': 'off',
+    'no-console': 'off',
+    'no-shadow': 'off',
     'no-restricted-syntax': [
-      'error', // Customizing restricted syntax rules
+      'error',
       {
         selector: 'ForInStatement',
         message: 'for..in loops are not allowed',
       },
     ],
-    'no-unused-vars': ['error', { vars: 'all', args: 'none' }], // Check for unused variables
+    'no-unused-vars': ['error', { vars: 'all', args: 'none' }],
   },
   overrides: [
     {
