@@ -9,7 +9,6 @@ const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 
 class FilesController {
   static async postUpload(req, res) {
-    // Get user from token
     const token = req.header('X-Token');
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -20,17 +19,13 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const {
-      name, type, parentId = 0, isPublic = false, data,
-    } = req.body;
+    const { name, type, parentId = '0', isPublic = false, data } = req.body;
 
-    // Validate inputs
     if (!name) {
       return res.status(400).json({ error: 'Missing name' });
     }
 
-    const validTypes = ['folder', 'file', 'image'];
-    if (!type || !validTypes.includes(type)) {
+    if (!type || !['folder', 'file', 'image'].includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
     }
 
@@ -38,12 +33,8 @@ class FilesController {
       return res.status(400).json({ error: 'Missing data' });
     }
 
-    // Check parent folder if parentId is provided
-    if (parentId !== 0) {
-      const parentFile = await dbClient.db
-        .collection('files')
-        .findOne({ _id: ObjectId(parentId) });
-
+    if (parentId !== '0') {
+      const parentFile = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(parentId) });
       if (!parentFile) {
         return res.status(400).json({ error: 'Parent not found' });
       }
@@ -52,37 +43,45 @@ class FilesController {
       }
     }
 
-    // Create file document
-    const fileDoc = {
+    const newFile = {
       userId: ObjectId(userId),
       name,
       type,
       isPublic,
-      parentId: parentId === 0 ? '0' : ObjectId(parentId),
+      parentId: parentId === '0' ? '0' : ObjectId(parentId),
     };
 
-    // If it's not a folder, store the file
-    if (type !== 'folder') {
-      // Create storage folder if it doesn't exist
-      if (!fs.existsSync(FOLDER_PATH)) {
-        fs.mkdirSync(FOLDER_PATH, { recursive: true });
-      }
+    if (type === 'folder') {
+      const result = await dbClient.client.db().collection('files').insertOne(newFile);
+      return res.status(201).json({
+        id: result.insertedId,
+        userId: newFile.userId,
+        name: newFile.name,
+        type: newFile.type,
+        isPublic: newFile.isPublic,
+        parentId: newFile.parentId,
+      });
+    } else {
+      const fileUuid = uuidv4();
+      const localPath = path.join(FOLDER_PATH, fileUuid);
 
-      // Generate unique filename and save file
-      const filename = uuidv4();
-      const localPath = path.join(FOLDER_PATH, filename);
-      const fileContent = Buffer.from(data, 'base64');
-      fs.writeFileSync(localPath, fileContent);
-      fileDoc.localPath = localPath;
+      await fs.promises.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.promises.writeFile(localPath, Buffer.from(data, 'base64'));
+
+      newFile.localPath = localPath;
+      const result = await dbClient.client.db().collection('files').insertOne(newFile);
+
+      return res.status(201).json({
+        id: result.insertedId,
+        userId: newFile.userId,
+        name: newFile.name,
+        type: newFile.type,
+        isPublic: newFile.isPublic,
+        parentId: newFile.parentId,
+      });
     }
-
-    // Save to database
-    const result = await dbClient.db.collection('files').insertOne(fileDoc);
-    fileDoc.id = result.insertedId;
-    delete fileDoc.localPath; // Don't send local path in response
-
-    return res.status(201).json(fileDoc);
   }
 }
 
 export default FilesController;
+

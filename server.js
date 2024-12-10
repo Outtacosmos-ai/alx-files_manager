@@ -1,14 +1,23 @@
-import express from 'express';
-import routes from './routes';
+import redisClient from '../utils/redis';
+import dbClient from '../utils/db';
 
-const app = express();
-const port = process.env.PORT || 5000;
+class AppController {
+  static getStatus(req, res) {
+    const status = {
+      redis: redisClient.isAlive(),
+      db: dbClient.isAlive(),
+    };
+    res.status(200).json(status);
+  }
 
-app.use(express.json());
-app.use('/', routes);
+  static async getStats(req, res) {
+    const stats = {
+      users: await dbClient.nbUsers(),
+      files: await dbClient.nbFiles(),
+    };
+    res.status(200).json(stats);
+  }
+}
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+export default AppController;
 
-export default app;

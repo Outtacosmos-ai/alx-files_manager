@@ -14,10 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bull": "^3.16.0",
+    "bull": "^3.29.3",
     "chai-http": "^4.3.0",
     "express": "^4.21.2",
-    "image-thumbnail": "^1.0.10",
+    "image-thumbnail": "^1.0.17",
     "mime-types": "^2.1.35",
     "mongodb": "^3.7.4",
     "redis": "^2.8.0",
@@ -25,19 +25,19 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.0",
-    "@babel/core": "^7.8.0",
-    "@babel/node": "^7.8.0",
-    "@babel/preset-env": "^7.8.2",
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.0",
+    "@babel/node": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@babel/register": "^7.8.0",
-    "chai": "^4.2.0",
+    "chai": "^4.5.0",
     "chai-http": "^4.3.0",
-    "eslint": "^6.4.0",
+    "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jest": "^22.17.0",
-    "mocha": "^6.2.2",
-    "nodemon": "^2.0.2",
+    "eslint-plugin-jest": "^22.21.0",
+    "mocha": "^6.2.3",
+    "nodemon": "^2.0.22",
     "supertest": "^6.3.4"
   }
 }
