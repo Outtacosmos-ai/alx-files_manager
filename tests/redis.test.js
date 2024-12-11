@@ -22,4 +22,3 @@ describe('redisClient', () => {
     expect(value).toBeNull();
   });
 });
-

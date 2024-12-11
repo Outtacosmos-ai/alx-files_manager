@@ -2,11 +2,11 @@ module.exports = {
   env: {
     browser: false,
     es6: true,
-    node: true,
+    mocha: true,
   },
   extends: [
     'airbnb-base',
-    'plugin:jest/all',
+    'plugin:mocha/recommended',
   ],
   globals: {
     Atomics: 'readonly',
@@ -16,7 +16,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: ['jest'],
+  plugins: ['mocha'],
   rules: {
     'max-classes-per-file': 'off',
     'no-underscore-dangle': 'off',
@@ -27,12 +27,12 @@ module.exports = {
       'LabeledStatement',
       'WithStatement',
     ],
+    'mocha/no-mocha-arrows': 'off', // Allow arrow functions in Mocha tests
   },
-  overrides:[
+  overrides: [
     {
       files: ['*.js'],
       excludedFiles: 'babel.config.js',
     }
   ]
 };
-

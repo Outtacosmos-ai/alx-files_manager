@@ -1,25 +1,30 @@
-import { ObjectId } from 'mongodb';
 import redisClient from '../utils/redis';
-import dbClient from '../utils/db';
+import { findUserById } from '../models/user';
 
-const getUser = async (req) => {
-  const token = req.header('X-Token');
-  if (!token) return null;
+export const authMiddleware = async (req, res, next) => {
+  try {
+    const token = req.header('X-Token');
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  const userId = await redisClient.get(`auth_${token}`);
-  if (!userId) return null;
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  const user = await dbClient.client.db().collection('users').findOne({ _id: ObjectId(userId) });
-  return user;
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    req.user = { userId: user._id.toString(), email: user.email };
+    req.token = token;
+    return next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
-export default async function auth(req, res, next) {
-  const user = await getUser(req);
-  if (!user) {
-    res.status(401).json({ error: 'Unauthorized' });
-  } else {
-    req.user = user;
-    next();
-  }
-}
-
+export default authMiddleware;
