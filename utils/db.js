@@ -13,8 +13,6 @@ class DBClient {
         console.error('MongoDB connection error:', err);
       } else {
         this.db = this.client.db();
-        this.users = this.db.collection('users');
-        this.files = this.db.collection('files');
         console.log('Connected to MongoDB');
       }
     });
@@ -25,11 +23,11 @@ class DBClient {
   }
 
   async nbUsers() {
-    return this.users.countDocuments();
+    return this.db.collection('users').countDocuments();
   }
 
   async nbFiles() {
-    return this.files.countDocuments();
+    return this.db.collection('files').countDocuments();
   }
 }
 

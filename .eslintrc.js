@@ -1,44 +1,38 @@
 module.exports = {
   env: {
-    node: true, 
-    es2020: true,
-    jest: true, // Add this line to tell ESLint about Jest globals
+    browser: false,
+    es6: true,
+    node: true,
   },
   extends: [
-    'eslint:recommended', 
-    'plugin:jest/all', 
-    'plugin:chai-friendly/recommended',
+    'airbnb-base',
+    'plugin:jest/all',
   ],
-  parserOptions: {
-    ecmaVersion: 2020,
-    sourceType: 'module',
-  },
-  plugins: ['jest'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
   },
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: 'module',
+  },
+  plugins: ['jest'],
   rules: {
-    'jest/valid-expect': 'off',
-    'no-undef': 'off',
     'max-classes-per-file': 'off',
     'no-underscore-dangle': 'off',
     'no-console': 'off',
     'no-shadow': 'off',
     'no-restricted-syntax': [
       'error',
-      {
-        selector: 'ForInStatement',
-        message: 'for..in loops are not allowed',
-      },
+      'LabeledStatement',
+      'WithStatement',
     ],
-    'no-unused-vars': ['error', { vars: 'all', args: 'none' }],
   },
-  overrides: [
+  overrides:[
     {
       files: ['*.js'],
       excludedFiles: 'babel.config.js',
-    },
-  ],
+    }
+  ]
 };
 

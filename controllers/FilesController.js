@@ -3,10 +3,12 @@ import { ObjectId } from 'mongodb';
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types';
+import Bull from 'bull';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
+const fileQueue = new Bull('fileQueue');
 
 class FilesController {
   static async postUpload(req, res) {
@@ -35,7 +37,7 @@ class FilesController {
     }
 
     if (parentId !== '0') {
-      const parentFile = await dbClient.files.findOne({ _id: ObjectId(parentId) });
+      const parentFile = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) });
       if (!parentFile) {
         return res.status(400).json({ error: 'Parent not found' });
       }
@@ -53,7 +55,7 @@ class FilesController {
     };
 
     if (type === 'folder') {
-      const result = await dbClient.files.insertOne(fileDocument);
+      const result = await dbClient.db.collection('files').insertOne(fileDocument);
       return res.status(201).json({
         id: result.insertedId,
         userId: fileDocument.userId,
@@ -70,7 +72,14 @@ class FilesController {
       await fs.promises.writeFile(localPath, Buffer.from(data, 'base64'));
 
       fileDocument.localPath = localPath;
-      const result = await dbClient.files.insertOne(fileDocument);
+      const result = await dbClient.db.collection('files').insertOne(fileDocument);
+
+      if (type === 'image') {
+        await fileQueue.add({
+          userId: userId.toString(),
+          fileId: result.insertedId.toString(),
+        });
+      }
 
       return res.status(201).json({
         id: result.insertedId,
@@ -95,7 +104,7 @@ class FilesController {
     }
 
     const fileId = req.params.id;
-    const file = await dbClient.files.findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
 
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
@@ -124,7 +133,7 @@ class FilesController {
       query.parentId = ObjectId(parentId);
     }
 
-    const files = await dbClient.files
+    const files = await dbClient.db.collection('files')
       .find(query)
       .skip(page * pageSize)
       .limit(pageSize)
@@ -145,13 +154,13 @@ class FilesController {
     }
 
     const fileId = req.params.id;
-    const file = await dbClient.files.findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
 
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    await dbClient.files.updateOne(
+    await dbClient.db.collection('files').updateOne(
       { _id: ObjectId(fileId) },
       { $set: { isPublic: true } }
     );
@@ -171,13 +180,13 @@ class FilesController {
     }
 
     const fileId = req.params.id;
-    const file = await dbClient.files.findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
 
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    await dbClient.files.updateOne(
+    await dbClient.db.collection('files').updateOne(
       { _id: ObjectId(fileId) },
       { $set: { isPublic: false } }
     );
@@ -187,7 +196,7 @@ class FilesController {
 
   static async getFile(req, res) {
     const fileId = req.params.id;
-    const file = await dbClient.files.findOne({ _id: ObjectId(fileId) });
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId) });
 
     if (!file) {
       return res.status(404).json({ error: 'Not found' });

@@ -1,7 +1,7 @@
 {
   "name": "files_manager",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple platform to upload and view files",
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint",
@@ -9,36 +9,34 @@
     "start-server": "nodemon --exec babel-node --presets @babel/preset-env ./server.js",
     "start-worker": "nodemon --exec babel-node --presets @babel/preset-env ./worker.js",
     "dev": "nodemon --exec babel-node --presets @babel/preset-env",
-    "test": "mocha --require @babel/register --exit tests/**/*.js"
+    "test": "mocha --require @babel/register --exit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bull": "^3.29.3",
-    "chai-http": "^4.3.0",
-    "express": "^4.21.2",
-    "image-thumbnail": "^1.0.17",
-    "mime-types": "^2.1.35",
-    "mongodb": "^3.7.4",
+    "bull": "^3.16.0",
+    "express": "^4.17.1",
+    "image-thumbnail": "^1.0.10",
+    "mime-types": "^2.1.27",
+    "mongodb": "^3.5.9",
     "redis": "^2.8.0",
     "sha1": "^1.1.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.26.4",
-    "@babel/core": "^7.26.0",
-    "@babel/node": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
+    "@babel/cli": "^7.8.0",
+    "@babel/core": "^7.8.0",
+    "@babel/node": "^7.8.0",
+    "@babel/preset-env": "^7.8.2",
     "@babel/register": "^7.8.0",
-    "chai": "^4.5.0",
+    "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "eslint": "^7.32.0",
+    "mocha": "^6.2.2",
+    "nodemon": "^2.0.2",
+    "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-chai-friendly": "^1.0.1",
     "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jest": "^22.21.0",
-    "mocha": "^6.2.3",
-    "nodemon": "^2.0.22",
-    "supertest": "^6.3.4"
+    "eslint-plugin-jest": "^22.17.0"
   }
 }
+
