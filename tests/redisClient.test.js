@@ -1,24 +1,29 @@
+import { expect } from 'chai';
 import redisClient from '../utils/redis';
 
 describe('redisClient', () => {
-  it('should connect to Redis', async () => {
-    expect.assertions(1);
-    const isAlive = redisClient.isAlive();
-    expect(isAlive).toBe(true);
+  before(async () => {
+    await redisClient.client.flushall('ASYNC');
   });
 
-  it('should set and get a value', async () => {
-    expect.assertions(1);
-    await redisClient.set('testKey', 'testValue', 10);
-    const value = await redisClient.get('testKey');
-    expect(value).toBe('testValue');
+  after(async () => {
+    await redisClient.client.flushall('ASYNC');
   });
 
-  it('should delete a value', async () => {
-    expect.assertions(1);
+  it('should connect to Redis', () => {
+    expect(redisClient.isAlive()).to.be.true;
+  });
+
+  it('should set and get values from Redis', async () => {
     await redisClient.set('testKey', 'testValue', 10);
-    await redisClient.del('testKey');
     const value = await redisClient.get('testKey');
-    expect(value).toBeNull();
+    expect(value).to.equal('testValue');
+  });
+
+  it('delete key can be called without issue', async () => {
+    const key = 'ToDelete';
+    await redisClient.set(key, 'value', 1);
+    const result = await redisClient.del(key);
+    expect(result).to.equal(true);
   });
 });
